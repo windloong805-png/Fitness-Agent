@@ -1,0 +1,29 @@
+# Python
+venv/
+__pycache__/
+*.pyc
+
+# Node
+node_modules/
+
+# IDE
+.idea/
+.vscode/
+
+# Env
+.env
+
+# Logs
+*.log
+
+# Models
+*.pth
+*.pt
+*.onnx
+
+# Dataset cache
+.cache/
+
+# OS
+Thumbs.db
+.DS_Store
