@@ -5,6 +5,7 @@ __pycache__/
 
 # Node
 node_modules/
+frontend/dist/
 
 # IDE
 .idea/
@@ -23,6 +24,10 @@ node_modules/
 
 # Dataset cache
 .cache/
+
+# Local database
+*.db
+*.db-journal
 
 # OS
 Thumbs.db
