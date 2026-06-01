@@ -1,2 +1,18 @@
 # Fitness-Agent
-A fitness agent to instruct your exercise
+
+融合知识增强与动态规划的健身智能体系统。
+
+## 项目简介
+
+本项目面向个性化健身训练推荐任务，构建基于 Qwen2.5 大模型的健身智能体系统。系统融合知识增强、动态规划和用户反馈机制，实现训练计划生成、训练收益评估、动态调整和自然语言解释。
+
+## 主要模块
+
+- backend：后端接口与智能体服务
+- frontend：前端交互界面
+- knowledge_base：健身知识库
+- dynamic_planning：动态规划与训练收益建模
+- rag：检索增强生成模块
+- qwen：大模型调用与提示词模板
+- experiments：实验验证
+- docs：论文相关文档
