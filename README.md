@@ -52,6 +52,30 @@ Fitness_Agent/
 
 后续所有新增模块都必须登记到论文映射体系中，明确其对应论文章节和论文创新点，确保工程实现能够持续支撑毕业论文写作与答辩。
 
+## 开发规范
+
+本项目新增统一开发规范文档：
+
+- `docs/development_rules.md`
+
+后续开发前必须先阅读：
+
+- `docs/development_rules.md`
+- `docs/thesis_mapping.md`
+- `docs/module_catalog.md`
+- `docs/system_architecture.md`
+
+所有新增模块、API、数据库表、前端页面和 Agent 能力，都必须标注对应模块、论文章节、功能说明和数据流，并在开发完成后更新 `docs/development_log.md`。
+
+## 后端运行
+
+```bash
+pip install -r backend/requirements.txt
+uvicorn backend.main:app --reload
+```
+
+后端使用项目根目录 `.env` 中的 `DATABASE_URL` 连接本地 MySQL 数据库。
+
 ## 前端原型运行
 
 ```bash

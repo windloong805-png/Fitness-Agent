@@ -242,3 +242,163 @@
 - `Base.metadata.create_all(bind=engine)` 验证通过。
 - FastAPI `TestClient` 启动生命周期通过，`GET /` 返回 200。
 - 真实 MySQL 接口测试通过：`POST /api/profile` 返回 201，`GET /api/profile/{user_id}` 返回 200。
+
+## 2026-06-01 创建统一开发规范文档
+
+完成内容：
+
+- 新增 `docs/development_rules.md`，作为 Fitness-Agent 项目的统一开发规范文件。
+- 明确项目开发原则、开发前必读文档、模块开发规范、文档更新规范、代码规范、数据库规范、FastAPI 规范、前端规范和 Agent 开发规范。
+- 在根 `README.md` 中新增“开发规范”章节，加入统一规范文档入口。
+
+对应论文章节：
+
+- 第三章 系统需求分析与总体设计
+- 第六章 系统实现
+
+新增文件：
+
+- `docs/development_rules.md`
+
+修改文件：
+
+- `README.md`
+- `docs/development_log.md`
+
+设计原因：
+
+- 项目进入多模块持续开发阶段，需要统一规范约束后续代码、文档、数据库、接口、前端和 Agent 能力开发。
+- 通过开发规范文件保证“论文章节 ↔ 系统模块 ↔ 代码目录”三层映射机制长期有效。
+
+后续计划：
+
+- 后续新增模块时，先阅读 `docs/development_rules.md` 并同步更新论文映射文档。
+
+## 2026-06-02 M3 训练收益评估模块开发
+
+完成内容：
+
+- 按 `docs/development_rules.md` 要求阅读开发规范、论文映射、模块目录和系统架构文档。
+- 创建 `backend/reward/` 目录。
+- 实现 `calculate_recovery()`，计算 0~10 的恢复指数。
+- 实现 `calculate_fatigue()`，计算 0~10 的疲劳指数。
+- 实现 `calculate_training_benefit()`，计算 0~10 的训练收益。
+- 实现 `calculate_total_reward()`，使用可配置权重计算综合收益。
+- 实现 `calculate_reward()`，统一输出 Recovery、Fatigue、TrainingBenefit 和 TotalReward。
+- 实现 `build_reward_context(user_id)`，从 M1 用户画像模块读取 AgentContext 并扩展 M3 computed_state。
+- 创建 M3 Pydantic Schema：`RewardInput`、`RewardOutput`、`AgentContextSchema`、`RewardWeights`。
+- 创建 `backend/reward/README.md`，说明模块职责、输入、输出、数据流、对应论文章节以及与 M1/M4 的关系。
+- 更新 `docs/thesis_mapping.md` 和 `docs/module_catalog.md`，补充 M3 实际实现目录与职责。
+
+对应论文章节：
+
+- 第四章 4.2 训练收益评估模型设计
+
+新增文件：
+
+- `backend/reward/__init__.py`
+- `backend/reward/formulas.py`
+- `backend/reward/calculator.py`
+- `backend/reward/schemas.py`
+- `backend/reward/README.md`
+
+修改文件：
+
+- `docs/thesis_mapping.md`
+- `docs/module_catalog.md`
+- `docs/development_log.md`
+
+设计原因：
+
+- M3 是 M4 动态规划模块的评价函数来源，需要把用户状态和候选训练动作统一转换为可计算奖励。
+- 恢复指数和疲劳指数用于控制训练风险，训练收益用于表达目标贡献，综合收益用于在收益与疲劳代价之间做权衡。
+- 将公式层与计算器层分离，可以让 M4 在不依赖数据库的情况下批量调用评价函数，也能让 Qwen2.5 使用结构化解释依据。
+
+后续计划：
+
+- 为 M3 增加 FastAPI 查询接口，便于前端数据页和计划页调用。
+- 在 M4 动态规划模块中接入 `calculate_total_reward()`。
+- 在实验模块中对不同权重组合进行对比实验。
+
+## 2026-06-02 M3 训练收益评估模块接口开发
+
+完成内容：
+
+- 新增 `backend/reward/router.py`。
+- 新增 `POST /api/reward/calculate` 接口，用于直接计算 Recovery、Fatigue、TrainingBenefit 和 TotalReward。
+- 新增 `GET /api/reward/context/{user_id}` 接口，用于读取 M1 用户画像并返回包含 M3 computed_state 的扩展 AgentContext。
+- 在 `backend/main.py` 注册 M3 路由。
+- 更新 `backend/reward/README.md`，补充 FastAPI 接口说明。
+
+对应论文章节：
+
+- 第四章 4.2 训练收益评估模型设计
+- 第六章 系统实现
+
+新增文件：
+
+- `backend/reward/router.py`
+
+修改文件：
+
+- `backend/main.py`
+- `backend/reward/README.md`
+- `docs/development_log.md`
+
+设计原因：
+
+- M3 内部函数适合 M4 动态规划模块直接调用，但接口层有助于前端展示、接口调试和论文答辩演示。
+- `POST /api/reward/calculate` 展示奖励函数的纯计算能力。
+- `GET /api/reward/context/{user_id}` 展示 M1 用户画像到 M3 训练收益评估的完整数据流。
+
+后续计划：
+
+- 在前端数据页展示 M3 指标。
+- 在 M4 动态规划模块中复用 M3 的内部评价函数。
+
+## 2026-06-02 M4 动态规划训练决策模块开发
+
+完成内容：
+
+- 创建 `backend/planner/` 目录。
+- 创建 `actions.py`，实现候选训练动作集合生成函数 `generate_candidate_actions()`。
+- 创建 `planner.py`，实现核心函数 `evaluate_action_reward()` 和 `plan_weekly_training()`。
+- 创建 `schemas.py`，定义 `TrainingAction`、`ActionEvaluation`、`DailyPlan`、`PlannerRequest`、`WeeklyPlanResponse`。
+- 创建 `router.py`，新增 `POST /api/planner/plan_weekly` 接口。
+- 创建 `README.md`，说明模块功能、输入、输出、数据流和论文对应章节。
+- 在 `backend/main.py` 注册 M4 路由。
+- 更新 `docs/thesis_mapping.md` 和 `docs/module_catalog.md`，登记 M4 实现补充。
+
+对应论文章节：
+
+- 第四章 4.3 动态规划训练决策模型设计
+- 第六章 系统实现
+
+新增文件：
+
+- `backend/planner/__init__.py`
+- `backend/planner/actions.py`
+- `backend/planner/planner.py`
+- `backend/planner/schemas.py`
+- `backend/planner/router.py`
+- `backend/planner/README.md`
+
+修改文件：
+
+- `backend/main.py`
+- `docs/thesis_mapping.md`
+- `docs/module_catalog.md`
+- `docs/development_log.md`
+
+设计原因：
+
+- M4 是 Fitness-Agent 从“单次训练建议”走向“多日训练计划生成”的关键模块。
+- 使用未来 7 天作为决策阶段，使用疲劳桶作为状态变量，可以清晰表达动态规划中的状态转移。
+- M4 复用 M3 的奖励函数，而不是重复实现收益公式，保证训练收益评估与计划生成的一致性。
+- 接口 `POST /api/planner/plan_weekly` 便于前端计划页展示，也便于论文答辩演示“用户画像 -> 训练收益 -> 动态规划路径”的完整流程。
+
+后续计划：
+
+- 将 M4 输出接入前端计划页。
+- 为 M4 增加单元测试和实验对比脚本。
+- 后续接入 M2 知识增强模块，对候选动作增加知识库安全约束。

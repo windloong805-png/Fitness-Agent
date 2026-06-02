@@ -12,7 +12,9 @@ Fitness-Agent FastAPI 应用入口。
 from fastapi import FastAPI
 
 from backend.database import Base, engine, verify_database_connection
+from backend.planner.router import router as planner_router
 from backend.profile.router import router as profile_router
+from backend.reward.router import router as reward_router
 
 
 app = FastAPI(
@@ -22,6 +24,8 @@ app = FastAPI(
 )
 
 app.include_router(profile_router)
+app.include_router(reward_router)
+app.include_router(planner_router)
 
 
 @app.on_event("startup")
